@@ -37,11 +37,11 @@ void Token::print()
 {
     if (const auto doublePtr(std::get_if<double>(&this->value)); doublePtr)
     {
-        std::cout << TokenTypeToString(this->token) << " " << *doublePtr << "\n";
+        std::cout << TokenTypeToString(this->token) << " " << *doublePtr << "val\n";
     }
     else
     {
-        std::cout << TokenTypeToString(this->token) << " " << std::get<std::string>(this->value) << "\n";
+        std::cout << TokenTypeToString(this->token) << " " << std::get<std::string>(this->value) << "val\n";
     }
 }
 
@@ -122,15 +122,15 @@ void MathParser::read_number()
 {
     char *ptr = nullptr;
 
-    this->current_t.token = TokenType::Number;
-    working_str = std::string(iter, working_str.end());
+    current_t.token = TokenType::Number;
+    working_str = std::string_view(iter);
 
-    this->current_t.value = strtod(working_str.c_str(), &ptr);
+    current_t.value = strtod(working_str.data(), &ptr);
 
     working_str = ptr;
     iter = working_str.begin();
 }
-
+/*
 int main()
 {
 
@@ -145,4 +145,4 @@ int main()
         token = tokenizer.get_token();
         token.print();
     }
-}
+}*/
