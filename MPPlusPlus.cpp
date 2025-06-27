@@ -6,6 +6,14 @@
 #include <cstdlib>
 #include <unordered_map>
 
+double sum(double a, double b) { return a + b; }
+double divd(double a, double b) { return a / b; }
+double mult(double a, double b) { return a * b; }
+double sub(double a, double b) { return a - b; }
+double neg(double a) { return -a; }
+
+//const FunctionsHolder holder;
+
 static std::string TokenTypeToString(TokenType token) throw()
 {
     switch (token)

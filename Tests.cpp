@@ -1,10 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 #include "MPPlusPlus.hpp"
-
+#include <array>
+#include <any>
+#include <vector>
+#include <span>
 TEST_CASE("Testing lexic parser")
 {
-    std::string expr = "8293 + 5923 * 49129 - 59812"; 
+    std::string expr = "8293 + 5923 * 49129 - 59812";
     MathParser tokenizer{expr};
     TokenType tokens[] = {TokenType::Number, TokenType::Function, TokenType::Number, TokenType::Function, TokenType::Number, TokenType::Function, TokenType::Number, TokenType::End};
     std::variant<double, std::string> variants[] = {8293., "+", 5923., "*", 49129., "-", 59812., 0.};
@@ -26,3 +29,26 @@ TEST_CASE("Testing lexic parser")
         i++;
     }
 }
+TEST_CASE("TESTING ERASURE")
+{
+    FunctionPointer a(2);
+    CHECK(a.cast<int>() == 2);
+
+    std::array<FunctionPointer, 2> test_vec = {FunctionPointer(&mult), FunctionPointer(&neg)};
+    FunctionPointer test(&sum);
+    test.cast<double(*)(double,double)>()(12.,12.);
+}/*
+TEST_CASE("TESTING FUNCTIONS ERASURE")
+{
+    const std::unordered_map<std::string_view, double> function_results = {{"+", 24.}, {"*", 144.}, {"-", 0.}, {"/", 1.}};
+    auto key = std::string_view("neg");
+    auto &par = typeid(double (*)(double, double));
+    auto &x = (functions<par>.at("neg"));
+    for (auto &x : functions<double, double>)
+    {
+        x.first;
+        x.second(12.);
+        double res = x.second(12., 12.);
+        CHECK(res == function_results.at(x.first));
+    }
+}*/
