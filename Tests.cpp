@@ -3,6 +3,7 @@
 #include "MPPlusPlus.hpp"
 #include <array>
 #include <any>
+#include <vector>
 TEST_CASE("Testing lexic parser")
 {
     std::string expr = "8293 + 5923 * 49129 - 59812";
@@ -31,6 +32,7 @@ TEST_CASE("TESTING ERASURE")
 {
     FunctionPointer a(2);
     CHECK(a.cast<int>() == 2);
+    std::array<FunctionPointer, 2> test_vec = {FunctionPointer(&mult), FunctionPointer(&neg)};
     //FunctionPointer test(&sum);
     //functions["+"] = test;
 

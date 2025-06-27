@@ -72,13 +72,13 @@ private:
 // };
 
 
-static std::unordered_map<std::string_view, FunctionPointer> functions;
-    // {"+", FunctionPointer(0)},
-    // {"-", FunctionPointer(1)},
-    // {"*", FunctionPointer(2)},
-    // {"/", FunctionPointer(3)},
-    // {"neg", FunctionPointer(4)},
-
+static std::unordered_map<std::string_view, std::function<double()>> functions{
+    {"+", FunctionPointer(0)},
+    {"-", FunctionPointer(1)},
+    {"*", FunctionPointer(2)},
+    {"/", FunctionPointer(3)},
+    {"neg", FunctionPointer(4)},
+};
 
 // https://stackoverflow.com/questions/45715219/store-functions-with-different-signatures-in-a-map
 static std::string TokenTypeToString(TokenType token) throw();
