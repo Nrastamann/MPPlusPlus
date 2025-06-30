@@ -4,15 +4,119 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <span>
 #include <unordered_map>
+#include <expected>
 
-double sum(double a, double b) { return a + b; }
-double divd(double a, double b) { return a / b; }
-double mult(double a, double b) { return a * b; }
-double sub(double a, double b) { return a - b; }
-double neg(double a) { return -a; }
+std::expected<double, Errors> sum(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+    if (UNLIMITED_ARGUMENTS)
+    {
+        double ans = 0.;
+        for (const auto &x : a)
+        {
+            ans += x;
+        }
+        return ans;
+    }
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 2)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return a[0] + a[1];
+}
 
-//const FunctionsHolder holder;
+std::expected<double, Errors> divd(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+    if (UNLIMITED_ARGUMENTS)
+    {
+        double ans = a[0];
+        for (auto i = 1; i < a.size(); i++)
+        {
+            if (SAFETY_CHECKS)
+            {
+                if (a[i] == 0)
+                {
+                    return std::unexpected(Errors::divide_by_zero);
+                }
+            }
+            ans /= a[i];
+        }
+        return ans;
+    }
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 2)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return a[0] / a[1];
+}
+std::expected<double, Errors> mult(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+    if (UNLIMITED_ARGUMENTS)
+    {
+        double ans = 1.;
+        for (const auto &x : a)
+        {
+            ans *= x;
+        }
+        return ans;
+    }
+
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 2)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return a[0] * a[1];
+}
+std::expected<double, Errors> sub(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+
+    if (UNLIMITED_ARGUMENTS)
+    {
+        double ans = a[0];
+        for (auto i = 1; i < a.size(); i++)
+        {
+            ans -= a[i];
+        }
+        return ans;
+    }
+
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 2)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return a[0] - a[1];
+}
+
+std::expected<double, Errors> neg(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() != 1)
+        return std::unexpected(Errors::invalid_input_size);
+
+        return -a[0];
+}
+
+// const FunctionsHolder holder;
 
 static std::string TokenTypeToString(TokenType token) throw()
 {
@@ -40,18 +144,7 @@ static std::string TokenTypeToString(TokenType token) throw()
         throw std::invalid_argument("No such token type");
     }
 }
-/*
-double strtod(std::string_view::const_iterator &iter, std::string_view str){
-    double answer = 0.;
 
-    while(iter <= str.end()){
-        if(!std::isdigit(*iter)){
-            return 0;
-        }
-    }
-    //ну стртод, только имплементация своя
-}
-*/
 void Token::print()
 {
     if (const auto doublePtr(std::get_if<double>(&this->value)); doublePtr)
@@ -83,8 +176,8 @@ void MathParser::next_token()
 
         if (std::isalpha(static_cast<unsigned char>(*iter)) || *iter == '_')
         {
-            while(*iter!=' ') iter++;
-            
+            while (*iter != ' ')
+                iter++;
         }
         else
         {
@@ -140,14 +233,14 @@ void MathParser::next_token()
 
 void MathParser::read_number()
 {
-    char *ptr = nullptr;
+    size_t ptr = 0;
 
     current_t.token = TokenType::Number;
     working_str.remove_prefix(iter - working_str.begin());
 
-    current_t.value = strtod(working_str.data(), &ptr);
+    current_t.value = std::stod(working_str.data(), &ptr);
 
-    working_str.remove_prefix(ptr - working_str.begin());
+    working_str.remove_prefix(ptr);
 
     iter = working_str.begin();
 }
