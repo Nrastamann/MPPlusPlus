@@ -31,12 +31,7 @@ TEST_CASE("Testing lexic parser")
 }
 TEST_CASE("TESTING ERASURE")
 {
-    FunctionPointer a(2);
-    CHECK(a.cast<int>() == 2);
-
-    std::array<FunctionPointer, 2> test_vec = {FunctionPointer(&mult), FunctionPointer(&neg)};
-    FunctionPointer test(&sum);
-    test.cast<double(*)(double,double)>()(12.,12.);
+ 
 }/*
 TEST_CASE("TESTING FUNCTIONS ERASURE")
 {

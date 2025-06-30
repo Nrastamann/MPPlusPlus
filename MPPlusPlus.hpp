@@ -4,20 +4,30 @@
 #include <iterator>
 #include <string>
 #include <cstdlib>
-#include <span>
+#include <any>
 #include <unordered_map>
+#include <cstdint>
 #include <memory>
 #include <functional>
+#include <span>
+#include <expected>
 
-constexpr bool FUNCTION_SET_CHECK{false};
+constexpr bool UNLIMITED_ARGUMENTS{false};
+constexpr bool SAFETY_CHECKS{false};
 
-double sum(double a, double b);
-double divd(double a, double b);
-double mult(double a, double b);
-double sub(double a, double b);
-double neg(double a);
+enum class Errors{
+    invalid_input_size,
+    empty_input,
+    divide_by_zero,
+};
 
-enum TokenType
+std::expected<double, Errors> sum(std::span<double> a);
+std::expected<double, Errors> divd(std::span<double> a);
+std::expected<double, Errors> mult(std::span<double> a);
+std::expected<double, Errors> sub(std::span<double> a);
+std::expected<double, Errors> neg(std::span<double> a);
+
+enum class TokenType
 {
     None,
     Number,
@@ -32,31 +42,10 @@ enum TokenType
 class FunctionPointer
 {
     const uint16_t arity;
-    const std::variant<
-        std::function<double()>,
-        std::function<double(double)>,
-        std::function<double(double, double)>,
-        std::function<double(std::span<double>)>>
-        function;
+    std::function<double(std::span<double>)> function;
 
 public:
-    template <typename T>
-    FunctionPointer(uint16_t arity, T pointer) : arity(arity), function(pointer)
-    {
-        if (FUNCTION_SET_CHECK)
-        {
-            switch (arity)
-            {
-            case 0:
-                //std::get_if if arity isn't same with pointer type - throw error?
-                /* code */
-                break;
 
-            default:
-                break;
-            }
-        }
-    }
 };
 // class FunctionPointer
 // {
@@ -102,13 +91,13 @@ public:
 //     {"neg", std::function<double(double)>(&neg)},
 // };
 
-static const std::unordered_map<std::string_view, FunctionPointer> functions{
-    {"+", FunctionPointer(0)},
-    {"-", FunctionPointer(1)},
-    {"*", FunctionPointer(2)},
-    {"/", FunctionPointer(3)},
-    {"neg", FunctionPointer(4)},
-};
+// static const std::unordered_map<std::string_view, FunctionPointer> functions{
+//     {"+", FunctionPointer(0)},
+//     {"-", FunctionPointer(1)},
+//     {"*", FunctionPointer(2)},
+//     {"/", FunctionPointer(3)},
+//     {"neg", FunctionPointer(4)},
+// };
 
 // https://stackoverflow.com/questions/45715219/store-functions-with-different-signatures-in-a-map
 static std::string TokenTypeToString(TokenType token) throw();
