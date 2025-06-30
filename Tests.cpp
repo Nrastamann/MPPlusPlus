@@ -29,21 +29,40 @@ TEST_CASE("Testing lexic parser")
         i++;
     }
 }
-TEST_CASE("TESTING ERASURE")
+TEST_CASE("TESTING BASIC FUNCTIONS WORKING")
 {
- 
-}/*
-TEST_CASE("TESTING FUNCTIONS ERASURE")
-{
-    const std::unordered_map<std::string_view, double> function_results = {{"+", 24.}, {"*", 144.}, {"-", 0.}, {"/", 1.}};
-    auto key = std::string_view("neg");
-    auto &par = typeid(double (*)(double, double));
-    auto &x = (functions<par>.at("neg"));
-    for (auto &x : functions<double, double>)
+    // 12.,12.
+    // 24, 0, 144, 1, -12
+    std::unordered_map<std::string_view, double> answers = {
+        {"+", 24.},
+        {"-", 0.},
+        {"/", 1.},
+        {"*", 144.},
+        {"neg", -12.},
+    };
+    for (const auto& x : answers)
     {
-        x.first;
-        x.second(12.);
-        double res = x.second(12., 12.);
-        CHECK(res == function_results.at(x.first));
+        std::vector<double> a(12.,12.);
+        if (x.first == "neg"){
+            a.pop_back();
+            CHECK(*functions["neg"](a) == x.second);
+            continue;
+        }
+        CHECK(x.second == *functions[x.first](a));
+
     }
-}*/
+} /*
+ TEST_CASE("TESTING FUNCTIONS ERASURE")
+ {
+     const std::unordered_map<std::string_view, double> function_results = {{"+", 24.}, {"*", 144.}, {"-", 0.}, {"/", 1.}};
+     auto key = std::string_view("neg");
+     auto &par = typeid(double (*)(double, double));
+     auto &x = (functions<par>.at("neg"));
+     for (auto &x : functions<double, double>)
+     {
+         x.first;
+         x.second(12.);
+         double res = x.second(12., 12.);
+         CHECK(res == function_results.at(x.first));
+     }
+ }*/

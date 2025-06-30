@@ -144,18 +144,7 @@ static std::string TokenTypeToString(TokenType token) throw()
         throw std::invalid_argument("No such token type");
     }
 }
-/*
-double strtod(std::string_view::const_iterator &iter, std::string_view str){
-    double answer = 0.;
 
-    while(iter <= str.end()){
-        if(!std::isdigit(*iter)){
-            return 0;
-        }
-    }
-    //ну стртод, только имплементация своя
-}
-*/
 void Token::print()
 {
     if (const auto doublePtr(std::get_if<double>(&this->value)); doublePtr)
@@ -244,14 +233,14 @@ void MathParser::next_token()
 
 void MathParser::read_number()
 {
-    char *ptr = nullptr;
+    size_t ptr = 0;
 
     current_t.token = TokenType::Number;
     working_str.remove_prefix(iter - working_str.begin());
 
-    current_t.value = strtod(working_str.data(), &ptr);
+    current_t.value = std::stod(working_str.data(), &ptr);
 
-    working_str.remove_prefix(ptr - working_str.begin());
+    working_str.remove_prefix(ptr);
 
     iter = working_str.begin();
 }
