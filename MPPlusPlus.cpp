@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <span>
+#include <cmath>
 #include <unordered_map>
 #include <expected>
 
@@ -66,7 +67,7 @@ std::expected<double, Errors> mult(std::span<double> a)
         return std::unexpected(Errors::empty_input);
     if (UNLIMITED_ARGUMENTS)
     {
-        double ans = 1.;
+        double ans = 1.0;
         for (const auto &x : a)
         {
             ans *= x;
@@ -83,6 +84,80 @@ std::expected<double, Errors> mult(std::span<double> a)
     }
     return a[0] * a[1];
 }
+
+std::expected<double, Errors> mpp_log(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 2)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+
+    if (LOGM_CHECKS)
+    {
+        switch (static_cast<int>(a[0]))
+        {
+        case static_cast<int>(LogBase::LN):
+            return std::log(a[1]);
+        case static_cast<int>(LogBase::LOG10):
+            return std::log10(a[1]);
+        case static_cast<int>(LogBase::LOG2):
+            return std::log2(a[1]);
+        }
+    }
+    return std::log(a[1]) / std::log(a[0]);
+}
+
+std::expected<double, Errors> mpp_ln(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 1)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return std::log(a[0]);
+}
+
+std::expected<double, Errors> mpp_log2(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 1)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return std::log2(a[0]);
+}
+
+std::expected<double, Errors> mpp_log10(std::span<double> a)
+{
+    if (SAFETY_CHECKS && a.size() == 0)
+        return std::unexpected(Errors::empty_input);
+
+    if (SAFETY_CHECKS)
+    {
+        if (a.size() != 1)
+        {
+            return std::unexpected(Errors::invalid_input_size);
+        }
+    }
+    return std::log10(a[0]);
+}
+
 std::expected<double, Errors> sub(std::span<double> a)
 {
     if (SAFETY_CHECKS && a.size() == 0)
@@ -113,12 +188,12 @@ std::expected<double, Errors> neg(std::span<double> a)
     if (SAFETY_CHECKS && a.size() != 1)
         return std::unexpected(Errors::invalid_input_size);
 
-        return -a[0];
+    return -a[0];
 }
 
 // const FunctionsHolder holder;
 
-static std::string TokenTypeToString(TokenType token) throw()
+std::string TokenTypeToString(TokenType token) throw()
 {
     switch (token)
     {
@@ -140,6 +215,8 @@ static std::string TokenTypeToString(TokenType token) throw()
         return "Comma";
     case TokenType::Error:
         return "Error";
+    case TokenType::Variable:
+        return "Variable";
     default:
         throw std::invalid_argument("No such token type");
     }
@@ -171,13 +248,28 @@ void MathParser::next_token()
         if ((*iter >= '0' && *iter <= '9') || *iter == '.')
         {
             this->read_number();
-            continue;
+            return;
         }
 
         if (std::isalpha(static_cast<unsigned char>(*iter)) || *iter == '_')
         {
-            while (*iter != ' ')
+            while (std::isalpha(static_cast<unsigned char>(*iter)) || *iter == '_' || std::isdigit(static_cast<unsigned char>(*iter)))
                 iter++;
+            
+             std::string possible_token = std::string(working_str.begin(),iter);
+            if (functions[possible_token])
+             {
+                 current_t.token = TokenType::Function;
+                 current_t.value = possible_token;
+                 return;
+             }
+            if (variables[possible_token])
+            {
+                current_t.token = TokenType::Variable;
+                current_t.value = variables[possible_token];
+                return;
+            }
+            current_t.token = TokenType::Error;
         }
         else
         {
@@ -236,11 +328,11 @@ void MathParser::read_number()
     size_t ptr = 0;
 
     current_t.token = TokenType::Number;
-    working_str.remove_prefix(iter - working_str.begin());
+    working_str = working_str.substr(iter - working_str.begin());
 
     current_t.value = std::stod(working_str.data(), &ptr);
 
-    working_str.remove_prefix(ptr);
+    working_str = working_str.substr(ptr);
 
     iter = working_str.begin();
 }
