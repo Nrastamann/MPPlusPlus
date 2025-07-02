@@ -3,19 +3,28 @@
 #include <vector>
 #include <iterator>
 #include <string>
-#include <cstdlib>
 #include <any>
 #include <unordered_map>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <functional>
 #include <span>
 #include <expected>
 
-constexpr bool UNLIMITED_ARGUMENTS{false};
-constexpr bool SAFETY_CHECKS{false};
+constexpr bool UNLIMITED_ARGUMENTS{true};
+constexpr bool SAFETY_CHECKS{true};
+constexpr bool LOGM_CHECKS{true};
 
-enum class Errors{
+enum class LogBase
+{
+    LOG10 = 0,
+    LN = 1,
+    LOG2 = 2,
+};
+
+enum class Errors
+{
     invalid_input_size,
     empty_input,
     divide_by_zero,
@@ -26,12 +35,17 @@ std::expected<double, Errors> divd(std::span<double> a);
 std::expected<double, Errors> mult(std::span<double> a);
 std::expected<double, Errors> sub(std::span<double> a);
 std::expected<double, Errors> neg(std::span<double> a);
+std::expected<double, Errors> mpp_log(std::span<double> a);
+std::expected<double, Errors> mpp_log2(std::span<double> a);
+std::expected<double, Errors> mpp_log10(std::span<double> a);
+std::expected<double, Errors> mpp_ln(std::span<double> a);
 
 enum class TokenType
 {
     None,
     Number,
     Id,
+    Variable,
     Function,
     LBracket,
     Comma,
@@ -40,33 +54,44 @@ enum class TokenType
     Error,
 };
 
-static std::unordered_map<std::string_view, std::function<std::expected<double, Errors>(std::span<double>)>> functions{
+class variable
+{
+public:
+};
+using function_mpp = std::function<std::expected<double, Errors>(std::span<double>)>;
+static std::unordered_map<std::string, function_mpp> functions{
     {"+", sum},
     {"-", sub},
     {"*", mult},
     {"/", divd},
     {"neg", neg},
+    {"log", mpp_log},
+    {"ln", mpp_ln},
+    {"log10", mpp_log10},
+    {"log2", mpp_log2},
 };
 
 // https://stackoverflow.com/questions/45715219/store-functions-with-different-signatures-in-a-map
-static std::string TokenTypeToString(TokenType token) throw();
+std::string TokenTypeToString(TokenType token) throw();
 
 struct Token
 {
     TokenType token = TokenType::None;
     std::variant<double, std::string> value;
-
     void print();
 };
 
 class MathParser
 {
-    Token current_t = Token();
-    std::string_view working_str = "";
-    std::string_view::const_iterator iter = working_str.cbegin();
+    Token current_t;
+    std::string working_str;
+    std::string::iterator iter;
+    std::unordered_map<std::string, double> variables;
 
 public:
-    MathParser(const std::string &working_str) : current_t(Token()), working_str(working_str), iter(this->working_str.begin()) {}
+    MathParser(std::string_view working_str, std::unordered_map<std::string, double> variables) : current_t(Token()), working_str(working_str), iter(this->working_str.begin()), variables(variables)
+    {
+    }
 
     void print_str()
     {
