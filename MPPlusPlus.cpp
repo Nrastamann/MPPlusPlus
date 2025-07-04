@@ -253,22 +253,34 @@ void MathParser::next_token()
 
         if (std::isalpha(static_cast<unsigned char>(*iter)) || *iter == '_')
         {
+            working_str = std::string(iter, working_str.end());
+            iter = working_str.begin();
+
             while (std::isalpha(static_cast<unsigned char>(*iter)) || *iter == '_' || std::isdigit(static_cast<unsigned char>(*iter)))
-                iter++;
-            
-             std::string possible_token = std::string(working_str.begin(),iter);
-            if (functions[possible_token])
-             {
-                 current_t.token = TokenType::Function;
-                 current_t.value = possible_token;
-                 return;
-             }
-            if (variables[possible_token])
             {
-                current_t.token = TokenType::Variable;
-                current_t.value = variables[possible_token];
+                iter++;
+            }
+            const std::string possible_token = std::string(working_str.begin(), iter);
+            if (functions.contains(possible_token))
+            {
+                current_t.token = TokenType::Function;
+                current_t.value = possible_token;
                 return;
             }
+            if (variables.contains(possible_token))
+            {
+                current_t.token = TokenType::Variable;
+                current_t.value = possible_token;
+                return;
+            }
+
+            for (auto &x : variables)
+            {
+                std::cout << x.first << " and second " << x.second << "\n";
+            }
+
+            std::cout << "\n\nPOSSIBLE TOKEN -" << possible_token << "\n\n";
+
             current_t.token = TokenType::Error;
         }
         else
@@ -315,6 +327,7 @@ void MathParser::next_token()
                 break;
             default:
                 current_t.token = TokenType::Error;
+                std::cout << *this->iter;
             }
             // special symbols and operators, check there.
         }

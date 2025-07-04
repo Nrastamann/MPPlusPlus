@@ -96,17 +96,17 @@ TEST_CASE("FUNCTIONS PARSER")
             break;
         }
 
-        if (const auto val(std::get_if<double>(&variants[i])); val)
-        {
-            std::cout << "answer - " << *val << " token type - " << TokenTypeToString(tokens[i % 4]) << "\n";
-        }
+        // if (const auto val(std::get_if<double>(&variants[i])); val)
+        // {
+        //     std::cout << "answer - " << *val << " token type - " << TokenTypeToString(tokens[i % 4]) << "\n";
+        // }
 
-        if (const auto val(std::get_if<std::string>(&variants[i])); val)
-        {
-            std::cout << "answer - " << *val << " token type - " << TokenTypeToString(tokens[i % 4]) << "\n";
-        }
+        // if (const auto val(std::get_if<std::string>(&variants[i])); val)
+        // {
+        //     std::cout << "answer - " << *val << " token type - " << TokenTypeToString(tokens[i % 4]) << "\n";
+        // }
 
-        token.print();
+        //        token.print();
 
         CHECK(token.token == tokens[i % 4]);
 
@@ -116,7 +116,55 @@ TEST_CASE("FUNCTIONS PARSER")
         }
         else
         {
-            token.print();
+            // token.print();
+            CHECK(std::get<std::string>(token.value) == std::get<std::string>(variants[i]));
+        }
+        i++;
+    }
+}
+
+TEST_CASE("VARIABLES PARSER")
+{
+    std::string expr = "(( x + x + x + y + z + y + z )) neg(x) log(y) ln(jfia_942895) log10(ffyw77676716) log2(_____fuadu)";
+    MathParser tokenizer{expr, {{"x", 0.}, {"y", 0.}, {"z", 0.}, {"jfia_942895", 0.}, {"ffyw77676716", 0}, {"_____fuadu", 0}}};
+    TokenType tokens[] = {
+        TokenType::LBracket, TokenType::LBracket, TokenType::Variable, TokenType::Function, TokenType::Variable, TokenType::Function, TokenType::Variable, TokenType::Function, TokenType::Variable, TokenType::Function, TokenType::Variable, TokenType::Function, TokenType::Variable, TokenType::Function, TokenType::Variable, TokenType::RBracket, TokenType::RBracket, TokenType::Function, TokenType::LBracket, TokenType::Variable, TokenType::RBracket, TokenType::Function, TokenType::LBracket, TokenType::Variable, TokenType::RBracket, TokenType::Function, TokenType::LBracket, TokenType::Variable, TokenType::RBracket, TokenType::Function, TokenType::LBracket, TokenType::Variable, TokenType::RBracket, TokenType::Function, TokenType::LBracket, TokenType::Variable, TokenType::RBracket};
+    std::variant<double, std::string> variants[] = {
+        0., 0., "x", "+", "x", "+", "x", "+", "y", "+", "z", "+", "y", "+", "z", 0., 0., "neg", 0., "x", 0., "log", 0., "y", 0., "ln", 0., "jfia_942895", 0., "log10", 0., "ffyw77676716", 0., "log2", 0., "_____fuadu", 0., 0.};
+
+    Token token = Token();
+    int i = 0;
+    while (token.token != TokenType::End)
+    {
+        tokenizer.next_token();
+        token = tokenizer.get_token();
+
+        if (token.token == TokenType::End)
+        {
+            break;
+        }
+
+        // if (const auto val(std::get_if<double>(&variants[i])); val)
+        // {
+        //     std::cout << "answer - " << *val << " token type - " << TokenTypeToString(tokens[i % 4]) << "\n";
+        // }
+
+        // if (const auto val(std::get_if<std::string>(&variants[i])); val)
+        // {
+        //     std::cout << "answer - " << *val << " token type - " << TokenTypeToString(tokens[i % 4]) << "\n";
+        // }
+
+        //        token.print();
+
+        CHECK(token.token == tokens[i]);
+
+        if (const auto val(std::get_if<double>(&token.value)); val)
+        {
+            CHECK(*val == std::get<double>(variants[i]));
+        }
+        else
+        {
+            // token.print();
             CHECK(std::get<std::string>(token.value) == std::get<std::string>(variants[i]));
         }
         i++;

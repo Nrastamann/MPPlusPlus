@@ -42,7 +42,7 @@ std::expected<double, Errors> mpp_ln(std::span<double> a);
 
 enum class TokenType
 {
-    None,
+    None = 0,
     Number,
     Id,
     Variable,
