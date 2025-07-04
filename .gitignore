@@ -2,7 +2,7 @@
 *.o
 *.s
 CMake*/**
-.*/**
+.**/**
 .vscode
 build*/**
 settings.json
