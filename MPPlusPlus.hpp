@@ -11,7 +11,7 @@ constexpr bool UNLIMITED_ARGUMENTS{true};
 constexpr bool SAFETY_CHECKS{true};
 constexpr bool LOGM_CHECKS{true};
 enum class ExpressionType {
-  function,
+  function, empty
   // variable, constant, functions
 };
 
@@ -43,6 +43,7 @@ enum class LogBase {
   LOG2 = 2,
 };
 
+std::expected<double, Errors> fmod(std::span<double> a);
 std::expected<double, Errors> sum(std::span<double> a);
 std::expected<double, Errors> divd(std::span<double> a);
 std::expected<double, Errors> mult(std::span<double> a);

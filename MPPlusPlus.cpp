@@ -16,6 +16,14 @@ std::expected<double, Errors> comma(std::span<double> a) {
   return a[1];
 }
 
+std::expected<double, Errors> fmod(std::span<double> a) {
+  if (SAFETY_CHECKS && (a.size() < 1 || a.size() > 2)) {
+    return std::unexpected(Errors::invalid_input_size);
+  }
+
+  return static_cast<int64_t>(a[0]) % static_cast<int64_t>(a[1]);
+}
+
 std::expected<double, Errors> sum(std::span<double> a) {
   if (SAFETY_CHECKS && a.size() == 0)
     return std::unexpected(Errors::empty_input);
@@ -363,16 +371,88 @@ Exprs MathParser::expr() {
   return ret_e;
 }
 
-Exprs MathParser::term() { factor(); }
+Exprs MathParser::term() {
+  Exprs ret_f = factor();
 
-Exprs MathParser::factor() { power(); }
+  if (!ret_f.value.has_value()) {
+    std::cout << static_cast<int>(ret_f.value.error())
+              << " - ERROR WHILE PARSING";
+  }
+
+  auto val(std::get_if<std::string>(&current_t.value));
+
+  while (current_t.token == TokenType::Operator && val &&
+         (*val == "*" || *val == "/" || *val == "%")) {
+    //    auto func = functions[std::get<std::string>(current_t.value)];
+    next_token();
+
+    Exprs fe = factor();
+
+    std::array<std::variant<Exprs, double>, 2> args{ret_f, fe};
+    ret_f = Exprs(ExpressionType::function, args);
+
+    *ret_f.value = *val;
+
+    val = std::get_if<std::string>(&current_t.value);
+  }
+
+  return ret_f;
+}
+
+Exprs MathParser::factor() {
+  Exprs ret = power();
+
+  int neg = 0;
+
+  if (ret.type == ExpressionType::function && ret.value == "neg") {
+    ret = std::get<Exprs>(ret.args[0]);
+    neg = 1;
+  }
+
+  Exprs insertion{ExpressionType::empty, {}};
+  auto val = (std::get_if<std::string>(&current_t.value));
+  while (current_t.token == TokenType::Operator && val && *val == "^") {
+    next_token();
+
+    if (insertion.type != ExpressionType::empty) {
+      Exprs p = power();
+
+      std::array<std::variant<Exprs, double>, 2> args = {insertion.args[1], p};
+
+      Exprs insert = Exprs(ExpressionType::function, args);
+
+      insert.value = *val;
+      // insert->function = t;
+      // insertion->parameters[1] = insert;
+      // insertion = insert;
+      insertion.args[1] = insert;
+      insertion = insert;
+    } else {
+      Exprs p = power();
+
+      std::array<std::variant<Exprs, double>, 2> args = {ret, p};
+
+      ret = Exprs(ExpressionType::function, args);
+      insertion = ret;
+    }
+
+    if (neg) { 
+      ret.value = "neg";
+    }
+    val = std::get_if<std::string>(&current_t.value);
+  }
+
+  return ret;
+}
 
 Exprs MathParser::power() {
-  // base();
+  auto b = base();
+  return b;
 }
 
 Exprs MathParser::base() {
-  // base();
+  auto b = base();
+  return b;
 }
 /*
 int main()
