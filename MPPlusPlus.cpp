@@ -321,18 +321,46 @@ Exprs MathParser::list() {
     // check for null?
 
     // ret = new_expr() as args - ret and expr_n
+    std::array<std::variant<Exprs, double>, 2> args{list_e, expr_n};
 
-    current_t.token = TokenType::Function;
-    current_t.value = "comma";
+    list_e = Exprs(ExpressionType::function, args);
+
+    if (!expr_n.value.has_value()) {
+      std::cout << static_cast<int>(expr_n.value.error())
+                << " - ERROR WHILE PARSING";
+    }
+
+    list_e.value = "comma";
   }
+
+  return list_e;
 }
 
 Exprs MathParser::expr() {
-  term();
+  Exprs ret_e = term();
   // check for null?
-
-  while (current_t.token == TokenType::Operator) {
+  if (!ret_e.value.has_value()) {
+    std::cout << static_cast<int>(ret_e.value.error())
+              << " - ERROR WHILE PARSING";
   }
+
+  auto val(std::get_if<std::string>(&current_t.value));
+
+  while (current_t.token == TokenType::Operator && val &&
+         (*val == "+" || *val == "-")) {
+    //    auto func = functions[std::get<std::string>(current_t.value)];
+
+    next_token();
+    Exprs te = term();
+
+    std::array<std::variant<Exprs, double>, 2> args{ret_e, te};
+    ret_e = Exprs(ExpressionType::function, args);
+
+    *ret_e.value = *val;
+
+    val = std::get_if<std::string>(&current_t.value);
+  }
+  return ret_e;
 }
 
 Exprs MathParser::term() { factor(); }

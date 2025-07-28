@@ -11,6 +11,7 @@ constexpr bool UNLIMITED_ARGUMENTS{true};
 constexpr bool SAFETY_CHECKS{true};
 constexpr bool LOGM_CHECKS{true};
 enum class ExpressionType {
+  function,
   // variable, constant, functions
 };
 
@@ -25,10 +26,12 @@ struct Exprs {
   std::expected<std::variant<double, std::string>, Errors> value;
   std::vector<std::variant<Exprs, double>> args;
 
-  Exprs(ExpressionType type, std::span<std::variant<Exprs, double>> arr, std::expected<std::variant<double, std::string>, Errors> value = 0.) : type(type), value(value), args() {
-    if(arr.size() > 0){
-      args.resize(arr.size(),0.);
-      std::copy(arr.begin(),arr.end(),args.begin());
+  Exprs(ExpressionType type, std::span<std::variant<Exprs, double>> arr,
+        std::expected<std::variant<double, std::string>, Errors> value = 0.)
+      : type(type), value(value), args() {
+    if (arr.size() > 0) {
+      args.resize(arr.size(), 0.);
+      std::copy(arr.begin(), arr.end(), args.begin());
       return;
     }
   }
